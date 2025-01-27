@@ -59,7 +59,7 @@ const Login = () => {
       <h1>Login</h1>
       <form onSubmit={handleSubmit}>
         <div>
-          <label>Username:</label>
+          <label>User Id:</label>
           <input
             type="text"
             value={userId}
