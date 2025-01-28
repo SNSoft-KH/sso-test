@@ -1,6 +1,6 @@
 # Get Started
 1. `git clone`
-2. cd each client and server and execute `pnpm install`
+2. enter each client and server `cd client` and execute `pnpm install`
 3. usable user can refer the `mock.data.ts` under server/src
 
 Example
