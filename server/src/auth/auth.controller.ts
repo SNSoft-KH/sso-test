@@ -1,3 +1,4 @@
+import { FPMS_REFRESH_TOKEN_NAME } from '../constants';
 import {
   Body,
   Controller,
@@ -20,22 +21,23 @@ export class AuthController {
 
   @Post('sign-in')
   async signIn(
-    @Body() body: { userId: string; password: string },
+    @Body() body: { username: string; password: string },
     @Res({ passthrough: true }) response: Response,
   ) {
     console.log(body);
-    const user = dataMock.find((user) => user.id === body.userId);
+    const user = dataMock.find((user) => user.id === body.username);
+    console.log(user);
     if (!user || user.password !== body.password) {
       throw new UnauthorizedException('Invalid credentials');
     }
     console.log(user);
 
-    const tokens = await this.authService.generateTokens(body.userId);
+    const tokens = await this.authService.generateTokens(body.username);
 
     // Save the hashed refresh token in the database (pseudo-code)
     // await database.saveRefreshToken(body.userId, hashedRefreshToken);
 
-    response.cookie('test_refresh_token', tokens.refreshToken, {
+    response.cookie(FPMS_REFRESH_TOKEN_NAME, tokens.refreshToken, {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       path: '/',
@@ -46,7 +48,7 @@ export class AuthController {
 
   @Get('refresh')
   async refresh(@Req() req: Request) {
-    const refreshToken = req.cookies['test_refresh_token'];
+    const refreshToken = req.cookies[FPMS_REFRESH_TOKEN_NAME];
     console.log('🚀 ~ refresh ~ refreshToken:', refreshToken);
     if (!refreshToken) {
       throw new UnauthorizedException('Invalid refresh token');
@@ -76,7 +78,7 @@ export class AuthController {
   @UseGuards(AuthGuard)
   async signOut(@Req() req: Request) {
     // remove refresh token on cookie
-    req.res.clearCookie('test_refresh_token');
+    req.res.clearCookie(FPMS_REFRESH_TOKEN_NAME);
   }
 
   @Get('me')

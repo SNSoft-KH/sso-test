@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { AuthService } from '../auth.service';
+import { FPMS_REFRESH_TOKEN_NAME } from 'src/constants';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -17,7 +18,7 @@ export class AuthGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const authHeader = request.headers.authorization;
-    const refreshToken = request.cookies['test_refresh_token'];
+    const refreshToken = request.cookies[FPMS_REFRESH_TOKEN_NAME];
     console.log('🚀 ~ canActivate ~ refreshToken:', refreshToken);
     console.log('🚀 ~ canActivate ~ authHeader:', authHeader);
     if (!refreshToken) {
