@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axiosInstance from "../axiosInstance";
+import api from "../services/api";
 import {
   FPMS_ACCESS_TOKEN_NAME,
   FPMS_REFRESH_TOKEN_NAME,
@@ -8,7 +8,7 @@ import {
 
 interface User {
   id: string;
-  name: string;
+  adminName: string;
   email: string;
   role: string;
   // Add other properties as needed
@@ -35,10 +35,11 @@ const Home = () => {
         }
         console.log("🚀 ~ checkAuth ~ newAccessToken:", newAccessToken);
         // 使用新的 token 获取用户信息
-        axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${
+        api.defaults.headers.common["Authorization"] = `Bearer ${
           accessToken || newAccessToken
         }`;
-        const meResponse = await axiosInstance.get("/auth/me");
+        const meResponse = await api.get("/me");
+        console.log("🚀 ~ checkAuth ~ meResponse:", meResponse.data);
         setUser(meResponse.data);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
@@ -47,10 +48,11 @@ const Home = () => {
           // 如果刷新失败，重定向到登录页面
           const newAccessToken = await refreshToken();
           console.log("🚀 ~ checkAuth ~ newAccessToken:", newAccessToken);
-          axiosInstance.defaults.headers.common[
+          api.defaults.headers.common[
             "Authorization"
           ] = `Bearer ${newAccessToken}`;
-          const meResponse = await axiosInstance.get("/auth/me");
+          const meResponse = await api.get("/me");
+          console.log("🚀 ~ checkAuth ~ meResponse:", meResponse.data);
           setUser(meResponse.data);
           return;
         }
@@ -62,14 +64,15 @@ const Home = () => {
 
   const isCookieExist = () => {
     const cookies = document.cookie.split(";");
+    console.log("🚀 ~ isCookieExist ~ cookies:", cookies);
     return cookies.some((cookie) =>
       cookie.trim().startsWith(`${FPMS_REFRESH_TOKEN_NAME}=`)
     );
   };
   const refreshToken = async () => {
-    const refreshResponse = await axiosInstance.get("/auth/refresh");
+    const refreshResponse = await api.post("/refresh-token");
     console.log("🚀 ~ refreshToken ~ refreshResponse:", refreshResponse);
-    const newAccessToken = refreshResponse.data.accessToken;
+    const newAccessToken = refreshResponse.data.token;
     localStorage.setItem(FPMS_ACCESS_TOKEN_NAME, newAccessToken);
     return newAccessToken;
   };
@@ -78,7 +81,7 @@ const Home = () => {
     try {
       console.log("Logout started");
       // 调用后端登出接口
-      await axiosInstance.post("/auth/sign-out");
+      await api.post("/sign-out");
       console.log("Logout successful");
     } catch (error) {
       console.error("Logout failed:", error);
@@ -95,7 +98,7 @@ const Home = () => {
       {user ? (
         <>
           <p>
-            You are logged in as <strong>{user.name}</strong>.
+            You are logged in as <strong>{user.adminName}</strong>.
           </p>
           <button onClick={logout}>Logout</button>
         </>
